@@ -1,0 +1,276 @@
+C51 COMPILER V8.16   DISPLAY                                                               01/16/2024 22:31:49 PAGE 1   
+
+
+C51 COMPILER V8.16, COMPILATION OF MODULE DISPLAY
+OBJECT MODULE PLACED IN display.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE display.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+*** WARNING C500 IN LINE 1 OF DISPLAY.C: LICENSE ERROR (R208: RENEW LICENSE ID CODE (LIC))
+
+   1          #include "display.h"
+   2          #include <intrins.h>
+   3          
+   4          void initP1P3(void)
+   5          {
+   6   1              // inicijalizacija portova koji se koriste za lcd
+   7   1              P1 = 0xE0;
+   8   1              P3 = 0xF9;
+   9   1      }
+  10          void wait1s(void)
+  11          {
+  12   1              // posle inicijalizacije portova se ceka 1 sekund
+  13   1              unsigned char i;
+  14   1      
+  15   1              TMOD = (TMOD&0xF0) | 0x01;
+  16   1              for(i = 0; i < 200; i++)
+  17   1              {
+  18   2                      TH0 = 0xEE;
+  19   2                      TL0 = 0x00;                               //4562
+  20   2                      TR0 = 1;
+  21   2                      while(!TF0)
+  22   2                      {
+  23   3                      }
+  24   2                      TF0 = 0;
+  25   2              }
+  26   1              
+  27   1      }
+  28          void wait50micro(void)
+  29          {
+  30   1                      
+  31   1                TH0 = 0xFF;      //65536 //2 / 
+  32   1                TL0 = 0xD2;
+  33   1                TR0 = 1;
+  34   1                while(!TF0)
+  35   1                {
+  36   2                }
+  37   1                TF0 = 0;
+  38   1      }
+  39          void wait2ms(void)
+  40          {
+  41   1      
+  42   1              TH0 = 0xF8; //isto kao prethodno samo brojis 2ms
+  43   1              TL0 = 0xCD;
+  44   1              TR0 = 1;
+  45   1              while (!TF0)
+  46   1              {
+  47   2              }
+  48   1              TF0 = 0;
+  49   1      }
+  50          void initDisplay(void)
+  51          {
+  52   1              initP1P3();
+  53   1      
+  54   1              wait1s();
+C51 COMPILER V8.16   DISPLAY                                                               01/16/2024 22:31:49 PAGE 2   
+
+  55   1      
+  56   1              LCD_RS = 0;
+  57   1              LCD_EN = 1;
+  58   1              LCD_D7 = 0;
+  59   1              LCD_D6 = 0;
+  60   1              LCD_D5 = 0;
+  61   1              LCD_D4 = 0;
+  62   1              LCD_EN = 0;
+  63   1      
+  64   1              wait50micro();
+  65   1      
+  66   1              LCD_RS = 0;
+  67   1              LCD_EN = 1;
+  68   1              LCD_D7 = 0;
+  69   1              LCD_D6 = 0;
+  70   1              LCD_D5 = 1;
+  71   1              LCD_D4 = 0;
+  72   1              LCD_EN = 0;
+  73   1      
+  74   1              _nop_();
+  75   1      
+  76   1              LCD_RS = 0;
+  77   1              LCD_EN = 1;
+  78   1              LCD_D7 = 1;
+  79   1              LCD_D6 = 0;
+  80   1              LCD_D5 = 0;
+  81   1              LCD_D4 = 0;
+  82   1              LCD_EN = 0;
+  83   1      
+  84   1              wait50micro();
+  85   1      
+  86   1              LCD_RS = 0;
+  87   1              LCD_EN = 1;
+  88   1              LCD_D7 = 0;
+  89   1              LCD_D6 = 0;
+  90   1              LCD_D5 = 0;
+  91   1              LCD_D4 = 0;
+  92   1              LCD_EN = 0;
+  93   1      
+  94   1              _nop_();
+  95   1      
+  96   1              LCD_RS = 0;
+  97   1              LCD_EN = 1;
+  98   1              LCD_D7 = 1;
+  99   1              LCD_D6 = 1;
+ 100   1              LCD_D5 = 1;
+ 101   1              LCD_D4 = 1;
+ 102   1              LCD_EN = 0;
+ 103   1      
+ 104   1              wait50micro();
+ 105   1      
+ 106   1              LCD_RS = 0;
+ 107   1              LCD_EN = 1;
+ 108   1              LCD_D7 = 0;
+ 109   1              LCD_D6 = 0;
+ 110   1              LCD_D5 = 0;
+ 111   1              LCD_D4 = 0;
+ 112   1              LCD_EN = 0;
+ 113   1      
+ 114   1              _nop_();
+ 115   1      
+ 116   1              LCD_RS = 0;
+C51 COMPILER V8.16   DISPLAY                                                               01/16/2024 22:31:49 PAGE 3   
+
+ 117   1              LCD_EN = 1;
+ 118   1              LCD_D7 = 0;
+ 119   1              LCD_D6 = 0;
+ 120   1              LCD_D5 = 0;
+ 121   1              LCD_D4 = 1;
+ 122   1              LCD_EN = 0;
+ 123   1      
+ 124   1              wait2ms();
+ 125   1              wait2ms();
+ 126   1      
+ 127   1              LCD_RS = 0;
+ 128   1              LCD_EN = 1;
+ 129   1              LCD_D7 = 0;
+ 130   1              LCD_D6 = 0;
+ 131   1              LCD_D5 = 0;
+ 132   1              LCD_D4 = 0;
+ 133   1              LCD_EN = 0;
+ 134   1      
+ 135   1              _nop_();
+ 136   1      
+ 137   1              LCD_RS = 0;
+ 138   1              LCD_EN = 1;
+ 139   1              LCD_D7 = 0;
+ 140   1              LCD_D6 = 1;
+ 141   1              LCD_D5 = 1;
+ 142   1              LCD_D4 = 0;
+ 143   1              LCD_EN = 0;
+ 144   1      
+ 145   1              wait50micro();
+ 146   1      
+ 147   1              wait2ms();
+ 148   1              LCD_BL = 1;
+ 149   1      
+ 150   1      
+ 151   1      
+ 152   1       
+ 153   1      }
+ 154          void clearDisplay(void)
+ 155          {
+ 156   1              LCD_RS = 0;
+ 157   1              LCD_EN = 1;
+ 158   1              LCD_D7 = 0;
+ 159   1              LCD_D6 = 0;
+ 160   1              LCD_D5 = 0;
+ 161   1              LCD_D4 = 0;
+ 162   1              LCD_EN = 0;
+ 163   1      
+ 164   1              _nop_();
+ 165   1      
+ 166   1              LCD_RS = 0;
+ 167   1              LCD_EN = 1;
+ 168   1              LCD_D7 = 0;
+ 169   1              LCD_D6 = 0;
+ 170   1              LCD_D5 = 0;
+ 171   1              LCD_D4 = 1;
+ 172   1              LCD_EN = 0;
+ 173   1      
+ 174   1              wait2ms();
+ 175   1              wait2ms();
+ 176   1      
+ 177   1      
+ 178   1      }
+C51 COMPILER V8.16   DISPLAY                                                               01/16/2024 22:31:49 PAGE 4   
+
+ 179          void newLine(void)
+ 180          {
+ 181   1              LCD_RS = 0;
+ 182   1              LCD_EN = 1;
+ 183   1              LCD_D7 = 1;
+ 184   1              LCD_D6 = 1;
+ 185   1              LCD_D5 = 0;
+ 186   1              LCD_D4 = 0;
+ 187   1              LCD_EN = 0;
+ 188   1      
+ 189   1              _nop_();
+ 190   1      
+ 191   1              LCD_RS = 0;
+ 192   1              LCD_EN = 1;
+ 193   1              LCD_D7 = 0;
+ 194   1              LCD_D6 = 0;
+ 195   1              LCD_D5 = 0;
+ 196   1              LCD_D4 = 0;
+ 197   1              LCD_EN = 0;
+ 198   1      
+ 199   1              wait2ms();
+ 200   1              wait2ms();
+ 201   1      }
+ 202          bit getbit(unsigned char n, unsigned char k)
+ 203          {
+ 204   1              unsigned char mask = 1 << k;
+ 205   1              unsigned char masked_n = n & mask;
+ 206   1              bit thebit = masked_n >> k;
+ 207   1              return thebit;
+ 208   1      }
+ 209          void writeChar(unsigned char karakter)
+ 210          {
+ 211   1              LCD_RS = 1;
+ 212   1              LCD_EN = 1;
+ 213   1              LCD_D7 = getbit(karakter, 7);
+ 214   1              LCD_D6 = getbit(karakter, 6);
+ 215   1              LCD_D5 = getbit(karakter, 5);
+ 216   1              LCD_D4 = getbit(karakter, 4);
+ 217   1              LCD_EN = 0;
+ 218   1      
+ 219   1              _nop_();
+ 220   1      
+ 221   1              LCD_EN = 1;
+ 222   1              LCD_D7 = getbit(karakter, 3);
+ 223   1              LCD_D6 = getbit(karakter, 2);
+ 224   1              LCD_D5 = getbit(karakter, 1);
+ 225   1              LCD_D4 = getbit(karakter, 0);
+ 226   1              LCD_EN = 0;
+ 227   1      
+ 228   1              wait50micro();
+ 229   1      }
+ 230          void writeLine(unsigned char *poruka)
+ 231          {
+ 232   1              unsigned char n = 0;
+ 233   1              while(poruka[n] != '\0')
+ 234   1              {
+ 235   2                      writeChar(poruka[n]);
+ 236   2                      n++;
+ 237   2              }       
+ 238   1      }
+ 239          
+ 240          // u prvom redu start ili stop
+C51 COMPILER V8.16   DISPLAY                                                               01/16/2024 22:31:49 PAGE 5   
+
+ 241          // u drugom redu mod 1 2 3 ili 4
+ 242          
+ 243                   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    407    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)

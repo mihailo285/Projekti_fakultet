@@ -1,0 +1,38 @@
+Zdravo 😊
+
+ 
+
+U prilogu mejla nalazi se skup podataka koji ćeš koristiti tokom izrade projekta iz predmeta „Softverski algoritmi u sistemima automatskog upravljanja“, a u fajlu "Opis skupa" ćeš pronaći i nešto više informacija o atributima koji se nalaze u njemu.
+
+ 
+
+Zadaci koje bi trebalo da uradiš su:
+
+Početno preprocesiranje podataka (proveriti da li postoje nedostajuće vrednosti ili anomalije, pretvoriti stringove u brojeve, izbaciti neke atribute ako je u startu očigledno da ne utiču na formiranje izlaza i sl. - sve ono o čemu smo pričali na vežbama)
+Eksplorativna analiza skupa (proveriti da li postoje neke jake korelacije, prikazati na grafiku raspodelu ciljnog atributa u odnosu na neke nezavisne promenljive i sl. - sve ono o čemu smo pričali na vežbama. Iskoristiti više različitih tipova grafika: histogrami, pite, linijski grafici...)
+Budući da je skup podataka koji ćeš koristiti nebalansiran, istražiti tehnike za balansiranje skupa podataka i primeniti neku od njih u projektu
+Kreiranje modela koji će vršiti klasifikaciju (iskoristiti barem 3 modela o kojima nismo pričali na vežbama - istražiti šta su stacking, bagging i boosting, kako funkcionišu, koji su im ciljevi i od svake grupe iskoristiti barem po 1 model)
+Podešavanje hiperparametara kreiranih modela
+Unakrsna validacija kreiranih modela
+Analiza rezultata predikcije (tačnost, preciznost, odziv, F1, matrica konfuzije  -  šta na osnovu njih možemo da zaključimo o kreiranom modelu? Iskoristiti i barem 2 metrike o kojima nismo pričali na vežbama)
+Istražiti šta su ROC krive, čemu služe i prikazati ROC za dati skup
+Odabir najbitnijih atributa (istražiti algoritme koji automatski pronalaze najbitnije atribute u skupu, tj. izbacuju iz skupa one koji su najmanje bitni, pa uporediti rezultate modela dobijene korišćenjem samo najbitnijih atributa sa rezultatima koji se dobiju kada se koriste svi atributi)
+ 
+
+Ako iskoristiš neki algoritam koji ne daje dobre rezultate, nemoj brisati taj deo koda nego ga samo zakomentariši, da može kasnije da se vidi šta je dalo dobre rezultate, a šta ne.
+
+ 
+
+Sve što uradiš i istražiš unesi u dokumentaciju: u max 4-5 strana opisati šta je urađeno, koji su algoritmi korišćeni, kakvi su rezultati dobijeni, šta na osnovu njih zaključujemo itd.
+
+ 
+
+Konačni rok za predaju projekta (implementacija + dokumentacija) je petak, 31. maj.
+
+Za sva pitanja u toku izrade ti stojim na raspolaganju.
+
+ 
+
+Pozdrav,
+
+Đorđe

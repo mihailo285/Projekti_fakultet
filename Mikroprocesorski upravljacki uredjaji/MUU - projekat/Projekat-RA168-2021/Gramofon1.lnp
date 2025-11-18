@@ -1,0 +1,4 @@
+"main.obj",
+"display.obj" 
+TO "Gramofon1" 
+RAMSIZE(256) 

@@ -1,0 +1,1 @@
+ yolo detect val model=C:/Users/Administrator/Desktop/directory/runs/detect/train/weights/best.pt data=C:/Users/Administrator/Desktop/directory/configval.yaml imgsz=640

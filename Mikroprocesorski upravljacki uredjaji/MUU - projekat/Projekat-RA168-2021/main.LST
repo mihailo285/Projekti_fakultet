@@ -1,0 +1,406 @@
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 1   
+
+
+C51 COMPILER V8.16, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+*** WARNING C500 IN LINE 1 OF MAIN.C: LICENSE ERROR (R208: RENEW LICENSE ID CODE (LIC))
+
+   1          /*
+   2          GRAMOFON 1
+   3          Implemetirati program za upravljanje maketom gramofona. Gramofon ima jedan ulaz i dva izlaza.
+   4          Ulaz:  
+   5                  Start sistema  
+   6          Izlazi:                    
+   7                  [P0_2] Prolazak nitne ispod induktivnog davaca
+   8                  [P0_3] Detektovan krug motora
+   9          
+  10          Uredjaj moze da radi u dva moda:
+  11                  1) Brojanje nitni - Uredjaj se startuje i svaki put kad detektuje krug motora na displeju ispise broj
+  12          nitni na gramofonu kao i vreme za koje napravi pun krug.
+  13                  2) Pomeranje gramofona za odreden broj nitni - Uredjaju se posalje komanda da se pomeri za
+  14          odredjeni broj nitni. Na displeju ispisati vreme (stavi zastitu da to sme da bude max 60s) za koje se 
+  15          gramofon pomerao.
+  16          Komande koje mogu da se posalju serijskom komunikacijom su:
+  17          ~ Start
+  18          ~ Stop
+  19          ~ Pomeraj za odredjen broj nitni
+  20          Na displeju ispisati u prvom redu status gramofona a u drugom odgovarajuce parametre. 
+  21          
+  22          ** tasteri NC, na uzlaznu ivicu (sa 0 na 1) menjamo stanje sistema
+  23          ** pazi da STOP zaustavi rad sistema u svakom momentu izvrsavanja
+  24          
+  25          */
+  26          
+  27          #include "display.h"
+  28          
+  29          unsigned char start;
+  30          unsigned char mod;
+  31          
+  32          char status;
+  33          int brojac_prekida;
+  34          unsigned char n=0;
+  35          unsigned char tajmer=0;
+  36          
+  37          unsigned char brojacZaTaster=0;
+  38          unsigned char trenutno_hardversko_stanje_P0_0=1;
+  39          unsigned char prethodno_hardversko_stanje_P0_0=1;
+  40          unsigned char trenutno_softversko_P0_0=1;
+  41          
+  42          unsigned char trenutno_hardversko_stanje_P0_1=1;
+  43          unsigned char prethodno_hardversko_stanje_P0_1=1;
+  44          unsigned char trenutno_softversko_P0_1=1;
+  45          
+  46          unsigned char trenutno_hardversko_stanje_P0_2=1;
+  47          unsigned char prethodno_hardversko_stanje_P0_2=1;
+  48          unsigned char trenutno_softversko_P0_2=1;
+  49          
+  50          unsigned char trenutno_hardversko_stanje_P0_3=1;
+  51          unsigned char prethodno_hardversko_stanje_P0_3=1;
+  52          unsigned char trenutno_softversko_P0_3=1;
+  53          
+  54          char *ok = "OK\r\n";
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 2   
+
+  55          char *greska = "ERROR\r\n";
+  56          
+  57          char *slanje;
+  58          unsigned char buffer[12];
+  59          char buffer_it = 0;
+  60          
+  61          void interrupt_t1(void) interrupt 3 {
+  62   1              TL1 = 0x48;
+  63   1              TH1 = 0x48;
+  64   1              if (++brojac_prekida == 4650) {
+  65   2                      tajmer += 1;                            // svaki put kad tajmer izbroji 1s
+  66   2                      status = 1;
+  67   2                      brojac_prekida = 0;
+  68   2              }
+  69   1         //P0_0 taster  ' start / stop '
+  70   1         trenutno_hardversko_stanje_P0_0=P0_0;
+  71   1         if(trenutno_hardversko_stanje_P0_0 == prethodno_hardversko_stanje_P0_0){
+  72   2                      if(++brojacZaTaster == 5){
+  73   3                              trenutno_softversko_P0_0 = trenutno_hardversko_stanje_P0_0;
+  74   3                              brojacZaTaster=0;
+  75   3                      }
+  76   2              }
+  77   1              else{
+  78   2                      brojacZaTaster=0;
+  79   2              }
+  80   1              prethodno_hardversko_stanje_P0_0 = trenutno_hardversko_stanje_P0_0;
+  81   1      
+  82   1              //P0_1 taster   ' mod1 / mod2 '
+  83   1              trenutno_hardversko_stanje_P0_1=P0_1;
+  84   1              if(trenutno_hardversko_stanje_P0_1 == prethodno_hardversko_stanje_P0_1){
+  85   2                      if(++brojacZaTaster == 5){
+  86   3                              trenutno_softversko_P0_1 = trenutno_hardversko_stanje_P0_1;
+  87   3                              brojacZaTaster=0;
+  88   3                      }
+  89   2              }
+  90   1              else{
+  91   2                      brojacZaTaster=0;
+  92   2              }
+  93   1              prethodno_hardversko_stanje_P0_1 = trenutno_hardversko_stanje_P0_1;
+  94   1      
+  95   1              //P0_2 taster   ' detektovana nitna '
+  96   1              trenutno_hardversko_stanje_P0_2=P0_2;
+  97   1              if(trenutno_hardversko_stanje_P0_2 == prethodno_hardversko_stanje_P0_2){
+  98   2                      if(++brojacZaTaster == 5){
+  99   3                              trenutno_softversko_P0_2 = trenutno_hardversko_stanje_P0_2;
+ 100   3                              brojacZaTaster=0;
+ 101   3                      }
+ 102   2              }
+ 103   1              else{
+ 104   2                      brojacZaTaster=0;
+ 105   2              }
+ 106   1              prethodno_hardversko_stanje_P0_2 = trenutno_hardversko_stanje_P0_2;
+ 107   1      
+ 108   1              //P0_3 taster   ' pun krug motora '
+ 109   1              trenutno_hardversko_stanje_P0_3=P0_3;
+ 110   1              if(trenutno_hardversko_stanje_P0_3 == prethodno_hardversko_stanje_P0_3){
+ 111   2                      if(++brojacZaTaster == 5){
+ 112   3                              trenutno_softversko_P0_3 = trenutno_hardversko_stanje_P0_3;
+ 113   3                              brojacZaTaster=0;
+ 114   3                      }
+ 115   2              }
+ 116   1              else{
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 3   
+
+ 117   2                      brojacZaTaster=0;
+ 118   2              }
+ 119   1              prethodno_hardversko_stanje_P0_3 = trenutno_hardversko_stanje_P0_3;
+ 120   1      }
+ 121          
+ 122          char *num2str(int broj){
+ 123   1              unsigned int i=0;
+ 124   1              unsigned int j;
+ 125   1              unsigned int ostatak;
+ 126   1              unsigned int len=0;
+ 127   1              unsigned int lenstr=0;
+ 128   1              char str[8];
+ 129   1              char pom[8];
+ 130   1              while(broj!=0){
+ 131   2                      ostatak=broj%10;
+ 132   2                      broj=broj/10;
+ 133   2                      pom[i]=ostatak+48;
+ 134   2                      len++;
+ 135   2                      i++;
+ 136   2              }
+ 137   1              pom[len]='\0';
+ 138   1              lenstr=len;
+ 139   1              j=len-1;
+ 140   1              for(i=0; i<lenstr; i++, j--){
+ 141   2                      str[i]=pom[j];
+ 142   2              }
+ 143   1              str[lenstr]='\0';
+ 144   1              return str;
+ 145   1      }
+ 146          
+ 147          void parsiraj_poruku(){
+ 148   1              // (START)
+ 149   1              if(buffer[0]=='(' && buffer[1]=='S' && buffer[2]=='T' && buffer[3]=='A' && buffer[4]=='R'&& buffer[5]=='T
+             -' && buffer[6]==')') {
+ 150   2                      start=1;
+ 151   2                      slanje=ok;
+ 152   2                      mod = 0;
+ 153   2              }
+ 154   1              // (STOP)
+ 155   1              else if(buffer[0]=='(' && buffer[1]=='S' && buffer[2]=='T' && buffer[3]=='O' && buffer[4]=='P' && buffer[
+             -6]==')') {
+ 156   2                      start=0;
+ 157   2                      slanje=ok;
+ 158   2                      P2=0x00;
+ 159   2              }
+ 160   1              // nitna (N:n) **podrazumevam da je n jednocifreno
+ 161   1              else if(buffer[0]=='(' && buffer[1]=='N' && buffer[2]==':' && buffer[4]==')') {
+ 162   2                      n=buffer[3]-48;
+ 163   2                      if(n>=0){
+ 164   3                              if(mod){
+ 165   4                                      slanje=ok;
+ 166   4                              }
+ 167   3                      }
+ 168   2                      else{
+ 169   3                              slanje=greska;
+ 170   3                      }
+ 171   2              }
+ 172   1              else{
+ 173   2                      slanje=greska;
+ 174   2              }
+ 175   1      
+ 176   1              SBUF=*slanje;
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 4   
+
+ 177   1              buffer[0]='\0';
+ 178   1              buffer_it=0;
+ 179   1      }
+ 180          
+ 181          void serijski_prekid(void)interrupt 4 {
+ 182   1              if(RI){
+ 183   2                      char prijem;
+ 184   2                      RI = 0; 
+ 185   2                      prijem = SBUF;
+ 186   2      
+ 187   2                      if(prijem=='('){
+ 188   3                              buffer_it=0;
+ 189   3                      }
+ 190   2      
+ 191   2                      buffer[buffer_it] = prijem;
+ 192   2                      buffer_it=(buffer_it+1)%12;
+ 193   2      
+ 194   2                      if(prijem==')'){
+ 195   3                              parsiraj_poruku();
+ 196   3                      }
+ 197   2              }
+ 198   1              if(TI){
+ 199   2                      TI = 0;
+ 200   2      
+ 201   2                      slanje++;
+ 202   2                      if(*slanje != '\0'){
+ 203   3                              SBUF=*slanje;
+ 204   3                      }
+ 205   2              }
+ 206   1      }
+ 207          
+ 208          void main(void){
+ 209   1              unsigned char nitna = 0;   // MOD1
+ 210   1              unsigned char nitna2 = 0;  // MOD2
+ 211   1              unsigned char trenutno_stanje_P0_0=1;
+ 212   1              unsigned char prethodno_stanje_P0_0=1;
+ 213   1              unsigned char trenutno_stanje_P0_1=1;
+ 214   1              unsigned char prethodno_stanje_P0_1=1;
+ 215   1              unsigned char trenutno_stanje_P0_2=1;
+ 216   1              unsigned char prethodno_stanje_P0_2=1;
+ 217   1              unsigned char trenutno_stanje_P0_3=1;
+ 218   1              unsigned char prethodno_stanje_P0_3=1;
+ 219   1      
+ 220   1              initDisplay();
+ 221   1      
+ 222   1              start = 0;
+ 223   1              mod = 0;
+ 224   1              P2=0;
+ 225   1      
+ 226   1              TL1 = 0x48;
+ 227   1              TH1 = 0x48;
+ 228   1              TMOD = 0x20;
+ 229   1              TR1 = 1;
+ 230   1              ET1 = 1;
+ 231   1      
+ 232   1              PCON &= 0x80; 
+ 233   1              BRL = 253;
+ 234   1              SCON = 0x50;
+ 235   1              BDRCON |= 0x1C;
+ 236   1      
+ 237   1              ES=1;
+ 238   1              EA=1;
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 5   
+
+ 239   1              
+ 240   1              status = 0;
+ 241   1              brojac_prekida = 0;
+ 242   1      
+ 243   1              while(1){
+ 244   2                      // P0_0  START / STOP
+ 245   2                      trenutno_stanje_P0_0=trenutno_softversko_P0_0;
+ 246   2                      if (trenutno_stanje_P0_0 > prethodno_stanje_P0_0) {
+ 247   3                              start=~start;
+ 248   3                              if(start){
+ 249   4                                      brojac_prekida = 0;
+ 250   4                                      TL1 = 0x48;
+ 251   4                                      TH1 = 0x48;
+ 252   4                                      mod = 0;
+ 253   4                                      nitna = 0;
+ 254   4                                      nitna2 = 0;
+ 255   4                                      tajmer = 0;
+ 256   4                                      
+ 257   4                                      clearDisplay();
+ 258   4                                      writeLine("MOD 1");
+ 259   4                              }
+ 260   3                              else{
+ 261   4                                      clearDisplay();
+ 262   4                                      writeLine("STOP");
+ 263   4                                      
+ 264   4                                      mod = 0;
+ 265   4                                      P2 = 0;
+ 266   4                              }
+ 267   3                      } 
+ 268   2              
+ 269   2                      // P0_1 MOD1 / MOD2
+ 270   2                      trenutno_stanje_P0_1=trenutno_softversko_P0_1;
+ 271   2                      if (trenutno_stanje_P0_1 > prethodno_stanje_P0_1) {
+ 272   3                              P2=0;
+ 273   3                              mod=~mod;
+ 274   3                              nitna = 0;
+ 275   3                              nitna2 = 0;
+ 276   3                              tajmer = 0;
+ 277   3                              if(mod){
+ 278   4                                      clearDisplay();
+ 279   4                                      writeLine("MOD 2");
+ 280   4                              }
+ 281   3                              else{
+ 282   4                                  clearDisplay();
+ 283   4                                      writeLine("MOD 1");
+ 284   4                              }
+ 285   3                      }
+ 286   2      
+ 287   2                      // P0_2 Detektovana nitna
+ 288   2                      trenutno_stanje_P0_2=trenutno_softversko_P0_2;
+ 289   2      
+ 290   2                      // P0_3 Pun krug
+ 291   2                      trenutno_stanje_P0_3=trenutno_softversko_P0_3;
+ 292   2      
+ 293   2                      if(start){
+ 294   3                              switch(mod){
+ 295   4                                      // MOD 1
+ 296   4                                      case 0:
+ 297   4                                              if(status){
+ 298   5                                                      P2=0xFF;
+ 299   5                                                      if(trenutno_stanje_P0_2 > prethodno_stanje_P0_2){
+ 300   6                                                              nitna+=1;
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 6   
+
+ 301   6                                                      }
+ 302   5                                                      if(trenutno_stanje_P0_3 > prethodno_stanje_P0_3){
+ 303   6                                                              //ispis posto je presao pun krug
+ 304   6                                                              clearDisplay();
+ 305   6                                                              writeLine("MOD 1");     
+ 306   6                                                              newLine();
+ 307   6                                                              //ako je proslo vise od 60s
+ 308   6                                                              if(tajmer>60){
+ 309   7                                                                      writeLine("timeout");
+ 310   7                                                              }
+ 311   6                                                              else{
+ 312   7                                                                      writeLine("n:");
+ 313   7                                                                      writeLine(num2str(nitna));
+ 314   7                                                                      writeLine(" ");
+ 315   7                                                                      writeLine(num2str(tajmer));
+ 316   7                                                                      writeLine("s");
+ 317   7                                                              }
+ 318   6                                                              tajmer=0;
+ 319   6                                                              nitna=0;
+ 320   6                                                      }
+ 321   5                                              }
+ 322   4                                              break;
+ 323   4                                      // MOD 2
+ 324   4                                      case 0xFF:
+ 325   4                                              if(status){
+ 326   5                                                      if(n!=0){
+ 327   6                                                              if (trenutno_stanje_P0_2 > prethodno_stanje_P0_2){
+ 328   7                                                                      nitna2+=1;
+ 329   7                                                              }
+ 330   6                                                              if(nitna2==n){
+ 331   7                                                                      P2=0;                   
+ 332   7                                                                      clearDisplay();
+ 333   7                                                                      writeLine("MOD 2");     
+ 334   7                                                                      newLine();
+ 335   7                                                                      if(tajmer>60){
+ 336   8                                                                              writeLine("timeout");
+ 337   8                                                                      }
+ 338   7                                                                      else{
+ 339   8                                                                              writeLine(num2str(tajmer));
+ 340   8                                                                              writeLine("s");
+ 341   8                                                                      }
+ 342   7                                                                      tajmer=0;
+ 343   7                                                                      nitna2=0;
+ 344   7                                                                      n=0;
+ 345   7                                                              }
+ 346   6                                                              else{
+ 347   7                                                                      P2=0xFF;
+ 348   7                                                              }
+ 349   6                                                      }
+ 350   5                                                      else{
+ 351   6                                                              P2=0x00;
+ 352   6                                                      }
+ 353   5                                              }
+ 354   4                                              break;
+ 355   4                                      default:
+ 356   4                                              P2=0x00;
+ 357   4                                              break;
+ 358   4                              }
+ 359   3                      }
+ 360   2      
+ 361   2              prethodno_stanje_P0_0 = trenutno_stanje_P0_0;
+ 362   2              prethodno_stanje_P0_1 = trenutno_stanje_P0_1;
+C51 COMPILER V8.16   MAIN                                                                  01/16/2024 22:31:49 PAGE 7   
+
+ 363   2              prethodno_stanje_P0_2 = trenutno_stanje_P0_2;
+ 364   2              prethodno_stanje_P0_3 = trenutno_stanje_P0_3;
+ 365   2              }
+ 366   1      }
+ 367          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1055    ----
+   CONSTANT SIZE    =     45    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     42      33
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  1 WARNING(S),  0 ERROR(S)
